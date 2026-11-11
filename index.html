@@ -199,7 +199,21 @@ for(let i=0;i<24;i++)eq.appendChild(document.createElement('i'));const bars=[...
 let ctx,an,data,useAn=false,raf;
 const fmt=s=>isFinite(s)?Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'):'0:00';
 
-function setup(){if(ctx||!/^https?:$/.test(location.protocol)||/^https?:\/\//i.test(au.getAttribute('src')||''))return;
+function setup(){
+  if(ctx || !/^https?:$/.test(location.protocol) ||
+     /^https?:\/\//i.test(au.getAttribute('src') || '')) return;
+
+  try {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const s = ctx.createMediaElementSource(au);
+    an = ctx.createAnalyser();
+    an.fftSize = 64;
+    s.connect(an);
+    an.connect(ctx.destination);
+    data = new Uint8Array(an.frequencyBinCount);
+    useAn = true;
+  } catch(e) {}
+}
 try{ctx=new(window.AudioContext||window.webkitAudioContext)();const s=ctx.createMediaElementSource(au);an=ctx.createAnalyser();an.fftSize=64;s.connect(an);an.connect(ctx.destination);data=new Uint8Array(an.frequencyBinCount);useAn=true}catch(e){}}
 function draw(t){if(useAn)an.getByteFrequencyData(data);
 bars.forEach((b,i)=>{const v=useAn?data[i]/255:.25+.75*Math.abs(Math.sin(t/260+i*.7)*Math.cos(t/410+i*.31));b.style.transform=`scaleY(${.08+v*.92})`});
